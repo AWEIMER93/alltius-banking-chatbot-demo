@@ -50,7 +50,7 @@ export const Chatbot = ({ isOpen, onClose }: ChatbotProps) => {
         {
           id: 1,
           text: "Hello! I'm your Alltius Bank assistant. How can I help you today?",
-          sender: "bot",
+          sender: "bot" as const,
           type: "options",
           options: [
             { label: "Make Transfer", value: "transfer" },
@@ -69,7 +69,13 @@ export const Chatbot = ({ isOpen, onClose }: ChatbotProps) => {
   const handleSend = () => {
     if (!input.trim()) return;
 
-    const newMessages = [...messages, { id: Date.now(), text: input, sender: "user" }];
+    const newUserMessage: Message = {
+      id: Date.now(),
+      text: input,
+      sender: "user" as const
+    };
+
+    const newMessages = [...messages, newUserMessage];
     setMessages(newMessages);
     setInput("");
 
