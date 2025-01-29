@@ -22,27 +22,27 @@ export default {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
+        background: "#1A1F2C",
+        foreground: "#FFFFFF",
         primary: {
-          DEFAULT: "#1A1F2C",
+          DEFAULT: "#7F3DFF",
           foreground: "#FFFFFF",
         },
         secondary: {
-          DEFAULT: "#4A90E2",
+          DEFAULT: "#FF5C8E",
           foreground: "#FFFFFF",
         },
         accent: {
-          DEFAULT: "#F97316",
+          DEFAULT: "#4A90E2",
           foreground: "#FFFFFF",
         },
         muted: {
-          DEFAULT: "#F1F5F9",
-          foreground: "#64748B",
+          DEFAULT: "#212736",
+          foreground: "#666666",
         },
         card: {
-          DEFAULT: "#FFFFFF",
-          foreground: "#1A1F2C",
+          DEFAULT: "#212736",
+          foreground: "#FFFFFF",
         },
       },
       keyframes: {
@@ -55,8 +55,8 @@ export default {
           "100%": { transform: "translateX(100%)" },
         },
         "fade-in": {
-          "0%": { opacity: "0" },
-          "100%": { opacity: "1" },
+          "0%": { opacity: "0", transform: "translateY(10px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
         },
       },
       animation: {

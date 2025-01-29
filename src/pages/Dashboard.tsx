@@ -7,13 +7,11 @@ import {
   Search,
   User,
   Home,
-  Wallet,
-  Shield,
-  Package,
+  BarChart3,
   MessageSquare,
-  TrendingUp,
-  ArrowUpRight,
-  ArrowDownRight,
+  Heart,
+  ArrowRightLeft,
+  LogOut,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +21,11 @@ import { Chatbot } from "@/components/Chatbot";
 import {
   AreaChart,
   Area,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -32,50 +35,33 @@ import {
 import { cn } from "@/lib/utils";
 
 const mockData = {
-  spent: 982.5,
-  received: 890.2,
-  investments: 24461.5,
-  cashback: 1897.3,
-  cardBalance: 3135.15,
-  income: 536.2,
-  outcome: 217.3,
-  transactions: [
-    {
-      id: 1,
-      merchant: "Apple Store",
-      amount: 135.0,
-      type: "Credit card",
-      cardLast4: "4300",
-      date: "Sat, Sep 4",
-      logo: "VISA",
-    },
-    {
-      id: 2,
-      merchant: "King Soopers",
-      amount: 16.5,
-      type: "Credit card",
-      cardLast4: "4289",
-      date: "Fri, Sep 3",
-      logo: "VISA",
-    },
-    {
-      id: 3,
-      merchant: "Safeway",
-      amount: 58.0,
-      type: "Debit card",
-      cardLast4: "9054",
-      date: "Fri, Sep 3",
-      logo: "MASTERCARD",
-    },
-    // Add more transactions as needed
+  cardNumber: "4568 8456 9874 2468",
+  cardHolder: "Alex Smith",
+  expDate: "05/25",
+  balance: 6480,
+  sendMoneyContacts: [
+    { id: 1, name: "Helena Foster", amount: 460.00, avatar: "HF" },
+    { id: 2, name: "James Rahman", amount: 160.00, avatar: "JR" },
+    { id: 3, name: "Jennifer Lauren", amount: 290.00, avatar: "JL" },
   ],
-  chartData: [
-    { name: "Jan", amount: 4000 },
-    { name: "Feb", amount: 3000 },
-    { name: "Mar", amount: 2000 },
-    { name: "Apr", amount: 2780 },
-    { name: "May", amount: 1890 },
-    { name: "Jun", amount: 2390 },
+  transactions: [
+    { id: 1, name: "Dribbble Pro", date: "Apr 18, 2024", amount: 60.00, icon: "dribbble" },
+    { id: 2, name: "Apple Pro", date: "Apr 18, 2024", amount: 26.00, icon: "apple" },
+    { id: 3, name: "Pizza Hub", date: "Apr 18, 2024", amount: 36.00, icon: "pizza" },
+    { id: 4, name: "Netflix", date: "Apr 18, 2024", amount: 29.00, icon: "netflix" },
+    { id: 5, name: "Udemy Course", date: "Apr 18, 2024", amount: 59.00, icon: "udemy" },
+  ],
+  incomeData: [
+    { month: "Apr", amount: 3200 },
+    { month: "May", amount: 4100 },
+    { month: "Jun", amount: 3800 },
+    { month: "Aug", amount: 4800 },
+    { month: "Sep", amount: 3900 },
+  ],
+  expenseTypes: [
+    { name: "Shopping", value: 66, color: "#FF5C8E" },
+    { name: "Transport", value: 26, color: "#7F3DFF" },
+    { name: "Others", value: 8, color: "#4A90E2" },
   ],
 };
 
@@ -83,263 +69,236 @@ const Dashboard = () => {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const navigate = useNavigate();
 
-  const MenuItem = ({ icon: Icon, label }: { icon: any; label: string }) => (
+  const MenuItem = ({ icon: Icon, label, active = false }: { icon: any; label: string; active?: boolean }) => (
     <Button
       variant="ghost"
-      className="w-full justify-start gap-2 text-primary hover:bg-muted group transition-all duration-300"
+      className={cn(
+        "w-full justify-start gap-3 text-muted-foreground hover:bg-primary/10 group transition-all duration-300",
+        active && "text-primary bg-primary/5"
+      )}
     >
       <Icon className="h-5 w-5 transition-transform duration-300 group-hover:scale-110" />
       <span className="opacity-90 group-hover:opacity-100">{label}</span>
     </Button>
   );
 
-  const StatCard = ({
-    title,
-    value,
-    trend,
-    icon: Icon,
-    trendUp = true,
-  }: {
-    title: string;
-    value: number;
-    trend?: string;
-    icon: any;
-    trendUp?: boolean;
-  }) => (
-    <Card className="p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-gradient-to-br from-card to-muted/50">
-      <div className="flex items-start justify-between mb-4">
-        <div className="p-2 rounded-lg bg-primary/5">
-          <Icon className="h-6 w-6 text-primary" />
-        </div>
-        {trendUp ? (
-          <ArrowUpRight className="h-5 w-5 text-green-500" />
-        ) : (
-          <ArrowDownRight className="h-5 w-5 text-red-500" />
-        )}
-      </div>
-      <p className="text-sm text-muted-foreground">{title}</p>
-      <h3 className="text-2xl font-bold mt-1 mb-2">
-        ${value.toLocaleString("en-US", { minimumFractionDigits: 2 })}
-      </h3>
-      {trend && (
-        <p className={cn("text-xs", trendUp ? "text-green-500" : "text-red-500")}>
-          {trend}
-        </p>
-      )}
-    </Card>
-  );
-
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="min-h-screen bg-[#1A1F2C] text-white flex">
       {/* Sidebar */}
-      <aside className="w-64 bg-card border-r p-4 flex flex-col animate-fade-in">
-        <div className="mb-8 transition-transform hover:scale-105">
+      <aside className="w-64 bg-[#212736] p-6 flex flex-col gap-8 animate-fade-in">
+        <div className="flex items-center gap-2 mb-8">
           <img
             src="https://gust-production.s3.amazonaws.com/uploads/startup/logo_image/1476546/Alltius-email2.png"
             alt="Alltius Bank Logo"
-            className="h-8"
+            className="h-8 invert"
           />
+          <span className="text-xl font-bold">Alltius</span>
         </div>
 
         <nav className="space-y-2">
-          <MenuItem icon={Home} label="Overview" />
-          <MenuItem icon={Wallet} label="Wallet" />
-          <MenuItem icon={DollarSign} label="Payments" />
-          <MenuItem icon={Package} label="Products" />
-          <MenuItem icon={Shield} label="Security" />
+          <MenuItem icon={Home} label="Dashboard" active />
+          <MenuItem icon={BarChart3} label="Statistics" />
+          <MenuItem icon={CreditCard} label="Wallet" />
+          <MenuItem icon={MessageSquare} label="Messages" />
+          <MenuItem icon={User} label="Profile" />
+          <MenuItem icon={Heart} label="Favorites" />
+          <MenuItem icon={ArrowRightLeft} label="Transfers" />
         </nav>
 
-        <div className="mt-auto">
-          <Card className="p-4 bg-muted hover:bg-muted/80 transition-colors duration-300">
-            <h3 className="font-semibold mb-2">Have questions?</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              Ask your financial specialist.
-            </p>
-            <Button
-              variant="secondary"
-              className="w-full hover:scale-105 transition-transform duration-300"
-              onClick={() => setIsChatOpen(true)}
-            >
-              Chat now
-            </Button>
-          </Card>
-        </div>
+        <Button
+          variant="ghost"
+          className="mt-auto text-red-400 hover:text-red-300 hover:bg-red-400/10 gap-3"
+          onClick={() => navigate("/")}
+        >
+          <LogOut className="h-5 w-5" />
+          Log Out
+        </Button>
       </aside>
 
       {/* Main content */}
-      <main className="flex-1 p-6 overflow-auto">
+      <main className="flex-1 p-8 overflow-auto">
         {/* Header */}
         <header className="flex justify-between items-center mb-8 animate-fade-in">
-          <div className="relative group">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4 transition-colors group-hover:text-primary" />
-            <Input
-              placeholder="Search"
-              className="pl-10 w-64 transition-all duration-300 focus:w-80"
-            />
+          <div className="flex gap-4 items-center">
+            <h1 className="text-2xl font-bold">Hi Alex,</h1>
+            <span className="text-muted-foreground">Welcome back</span>
           </div>
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" className="relative">
+          
+          <div className="flex items-center gap-6">
+            <div className="relative group">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+              <Input
+                placeholder="Search"
+                className="pl-10 w-64 bg-[#212736] border-none focus:ring-primary/20"
+              />
+            </div>
+            
+            <Button variant="ghost" size="icon" className="relative hover:bg-primary/10">
               <Bell className="h-5 w-5 transition-transform hover:rotate-12" />
-              <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 rounded-full animate-pulse"></span>
+              <span className="absolute -top-1 -right-1 h-2 w-2 bg-red-500 rounded-full animate-pulse"></span>
             </Button>
-            <Button
-              variant="ghost"
-              className="gap-2 group"
-              onClick={() => navigate("/")}
-            >
-              <User className="h-5 w-5 transition-transform group-hover:scale-110" />
-              <span className="group-hover:text-primary transition-colors">Alex Smith</span>
-            </Button>
+            
+            <Avatar className="h-10 w-10 border-2 border-primary/20 hover:border-primary transition-colors">
+              <img
+                src={`https://api.dicebear.com/7.x/initials/svg?seed=AS`}
+                alt="Alex Smith"
+              />
+            </Avatar>
           </div>
         </header>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <StatCard
-            title="Spent this month"
-            value={mockData.spent}
-            icon={DollarSign}
-            trend="+2.4% vs last month"
-            trendUp={false}
-          />
-          <StatCard
-            title="Received this month"
-            value={mockData.received}
-            icon={Wallet}
-            trend="+4.3% vs last month"
-          />
-          <StatCard
-            title="Investments"
-            value={mockData.investments}
-            icon={TrendingUp}
-            trend="+$121.1 (2.1%)"
-          />
-          <StatCard
-            title="Cashback"
-            value={mockData.cashback}
-            icon={CreditCard}
-            trend="+$24.3 this month"
-          />
-        </div>
-
-        {/* Main Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Card Details */}
-          <Card className="col-span-2 p-6 hover:shadow-xl transition-all duration-300">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-semibold">Cards</h2>
-              <Button variant="outline" className="hover:scale-105 transition-transform">
-                Add new card
-              </Button>
+        <div className="grid grid-cols-12 gap-6">
+          {/* Credit Card */}
+          <Card className="col-span-5 bg-gradient-to-br from-[#FF5C8E] to-[#7F3DFF] p-6 rounded-3xl border-none hover:shadow-xl transition-all duration-500 group hover:-translate-y-1">
+            <div className="flex justify-between items-center mb-8">
+              <img
+                src="https://gust-production.s3.amazonaws.com/uploads/startup/logo_image/1476546/Alltius-email2.png"
+                alt="Alltius Bank Logo"
+                className="h-8 invert"
+              />
+              <CreditCard className="h-8 w-8" />
             </div>
-
-            <div className="bg-gradient-to-r from-primary to-secondary text-white rounded-xl p-6 mb-6 transform transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl">
-              <div className="flex justify-between items-center mb-8">
-                <img
-                  src="https://gust-production.s3.amazonaws.com/uploads/startup/logo_image/1476546/Alltius-email2.png"
-                  alt="Alltius Bank Logo"
-                  className="h-8 invert"
-                />
-                <CreditCard className="h-8 w-8" />
+            <p className="text-2xl font-mono mb-6 tracking-wider">{mockData.cardNumber}</p>
+            <div className="flex justify-between items-center">
+              <div>
+                <p className="text-sm opacity-80">Card Holder</p>
+                <p className="font-medium">{mockData.cardHolder}</p>
               </div>
-              <p className="text-lg mb-4 font-mono">**** **** **** 4300</p>
-              <div className="flex justify-between items-center">
-                <div>
-                  <p className="text-sm opacity-80">Card Holder</p>
-                  <p>Alex Smith</p>
-                </div>
-                <div>
-                  <p className="text-sm opacity-80">Expires</p>
-                  <p>09/25</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <div className="flex justify-between items-center p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
-                <p className="text-muted-foreground">Available balance</p>
-                <p className="text-2xl font-bold">${mockData.cardBalance}</p>
-              </div>
-              <div className="flex justify-between items-center">
-                <div className="p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
-                  <p className="text-sm text-muted-foreground">Income</p>
-                  <p className="font-semibold">${mockData.income}</p>
-                </div>
-                <div className="p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
-                  <p className="text-sm text-muted-foreground">Outcome</p>
-                  <p className="font-semibold">${mockData.outcome}</p>
-                </div>
+              <div>
+                <p className="text-sm opacity-80">Expires</p>
+                <p className="font-medium">{mockData.expDate}</p>
               </div>
             </div>
           </Card>
 
-          {/* Transactions */}
-          <Card className="p-6 hover:shadow-xl transition-all duration-300">
-            <h2 className="text-xl font-semibold mb-6">Recent Transactions</h2>
+          {/* Send Money */}
+          <Card className="col-span-7 bg-[#212736] p-6 rounded-3xl border-none">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-lg font-semibold">Send money</h2>
+              <Button variant="ghost" className="text-sm text-muted-foreground">
+                Monthly
+              </Button>
+            </div>
             <div className="space-y-4">
-              {mockData.transactions.map((transaction) => (
+              {mockData.sendMoneyContacts.map((contact) => (
                 <div
-                  key={transaction.id}
-                  className="flex items-center justify-between p-3 hover:bg-muted rounded-lg transition-all duration-300 hover:-translate-x-1"
+                  key={contact.id}
+                  className="flex items-center justify-between p-3 rounded-2xl bg-[#1A1F2C] hover:bg-[#1A1F2C]/80 transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <Avatar className="border-2 border-transparent hover:border-primary transition-colors">
-                      <img
-                        src={`https://api.dicebear.com/7.x/initials/svg?seed=${transaction.merchant}`}
-                        alt={transaction.merchant}
-                      />
+                    <Avatar className="border-2 border-primary/20">
+                      <div className="font-medium">{contact.avatar}</div>
                     </Avatar>
-                    <div>
-                      <p className="font-medium">{transaction.merchant}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {transaction.date}
-                      </p>
-                    </div>
+                    <span className="font-medium">{contact.name}</span>
                   </div>
-                  <div className="text-right">
-                    <p className="font-medium">
-                      ${transaction.amount.toFixed(2)}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {transaction.type} *{transaction.cardLast4}
-                    </p>
-                  </div>
+                  <span className="font-mono">${contact.amount.toFixed(2)}</span>
                 </div>
               ))}
             </div>
           </Card>
 
-          {/* Chart */}
-          <Card className="col-span-2 p-6 hover:shadow-xl transition-all duration-300">
-            <h2 className="text-xl font-semibold mb-6">Spending Overview</h2>
-            <div className="h-[300px]">
+          {/* Income Chart */}
+          <Card className="col-span-6 bg-[#212736] p-6 rounded-3xl border-none">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-lg font-semibold">Income</h2>
+              <Button variant="ghost" className="text-sm text-muted-foreground">
+                Recent
+              </Button>
+            </div>
+            <div className="h-[200px]">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={mockData.chartData}>
-                  <defs>
-                    <linearGradient id="colorAmount" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#4A90E2" stopOpacity={0.8}/>
-                      <stop offset="95%" stopColor="#4A90E2" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
+                <BarChart data={mockData.incomeData}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#333" />
+                  <XAxis dataKey="month" stroke="#666" />
+                  <YAxis stroke="#666" />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: "var(--background)",
-                      border: "1px solid var(--border)",
+                      backgroundColor: "#212736",
+                      border: "none",
                       borderRadius: "8px",
                     }}
                   />
-                  <Area
-                    type="monotone"
-                    dataKey="amount"
-                    stroke="#4A90E2"
-                    fill="url(#colorAmount)"
-                    strokeWidth={2}
-                  />
-                </AreaChart>
+                  <Bar dataKey="amount" fill="#7F3DFF" radius={[4, 4, 0, 0]} />
+                </BarChart>
               </ResponsiveContainer>
+            </div>
+          </Card>
+
+          {/* Expenses Chart */}
+          <Card className="col-span-6 bg-[#212736] p-6 rounded-3xl border-none">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-lg font-semibold">Type of expenses</h2>
+              <Button variant="ghost" className="text-sm text-muted-foreground">
+                Recent
+              </Button>
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="h-[200px] w-[200px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={mockData.expenseTypes}
+                      innerRadius={60}
+                      outerRadius={80}
+                      paddingAngle={5}
+                      dataKey="value"
+                    >
+                      {mockData.expenseTypes.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="space-y-4">
+                {mockData.expenseTypes.map((type) => (
+                  <div key={type.name} className="flex items-center gap-3">
+                    <div
+                      className="h-3 w-3 rounded-full"
+                      style={{ backgroundColor: type.color }}
+                    />
+                    <span className="text-sm">
+                      {type.name} ({type.value}%)
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </Card>
+
+          {/* Transactions */}
+          <Card className="col-span-12 bg-[#212736] p-6 rounded-3xl border-none">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-lg font-semibold">Transaction History</h2>
+              <Button variant="ghost" className="text-sm text-muted-foreground">
+                Monthly
+              </Button>
+            </div>
+            <div className="space-y-4">
+              {mockData.transactions.map((transaction) => (
+                <div
+                  key={transaction.id}
+                  className="flex items-center justify-between p-4 rounded-2xl bg-[#1A1F2C] hover:bg-[#1A1F2C]/80 transition-all duration-300 group hover:-translate-x-1"
+                >
+                  <div className="flex items-center gap-4">
+                    <Avatar className="bg-primary/10">
+                      <img
+                        src={`https://api.dicebear.com/7.x/initials/svg?seed=${transaction.icon}`}
+                        alt={transaction.name}
+                      />
+                    </Avatar>
+                    <div>
+                      <p className="font-medium group-hover:text-primary transition-colors">
+                        {transaction.name}
+                      </p>
+                      <p className="text-sm text-muted-foreground">{transaction.date}</p>
+                    </div>
+                  </div>
+                  <span className="font-mono font-medium">
+                    ${transaction.amount.toFixed(2)}
+                  </span>
+                </div>
+              ))}
             </div>
           </Card>
         </div>
